@@ -9,8 +9,9 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
 // 1 MIDDLEWARE
-
-app.use(morgan(`dev`));
+if (process.env.NODE_ENV === `development`) {
+  app.use(morgan(`dev`));
+}
 
 // middleware function handle incoming request
 // add body to object
