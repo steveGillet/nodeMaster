@@ -1,5 +1,13 @@
 // const fs = require('fs');
 const Tour = require(`./../models/tourModel`);
+// const APIFeatures = require(`./../utils/apiFeatures`);
+
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = `5`;
+  req.query.sort = `-ratingAverage,price`;
+  req.query.fields = `name,price,ratingAverage,summary,difficulty`;
+  next();
+};
 
 // const tours = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
@@ -31,8 +39,6 @@ exports.getAllTours = async (req, res) => {
     const exFields = [`page`, `sort`, `limit`, `fields`];
     exFields.forEach((field) => delete queryObj[field]);
 
-    console.log(req.query, queryObj);
-
     // const tours = await Tour.find({
     //   duration: 5,
     //   difficulty: `easy`,
@@ -42,9 +48,38 @@ exports.getAllTours = async (req, res) => {
 
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    console.log(JSON.parse(queryStr));
 
-    const query = Tour.find(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
+
+    // SORTING
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(` `);
+      query = query.sort(sortBy);
+      // sort by two fields
+      // sort(`price ratingsAverage`)
+    } else {
+      query = query.sort(`-createdAt`);
+    }
+
+    // FIELD LIMITING
+    if (req.query.fields) {
+      const fields = req.query.fields.split(`,`).join(` `);
+      query = query.select(fields);
+    } else {
+      query = query.select(`-__v`);
+    }
+
+    // PAGINATION
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 5;
+    const skip = limit * (page - 1);
+    // page=2&limit=5
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error(`There are no more pages`);
+    }
 
     // { difficulty: `easy`, duration: { $gte: 5 } }
 
@@ -54,7 +89,13 @@ exports.getAllTours = async (req, res) => {
     //   .where(`difficulty`)
     //   .equals(`easy`);
 
-    // EXECUTE QUERY
+    // // EXECUTE QUERY
+    // const features = new APIFeatures(Tour.find(), req.query)
+    //   .filter()
+    //   .sort()
+    //   .limitFields()
+    //   .paginate();
+    // const tours = await features.query;
     const tours = await query;
 
     // SEND RESPONSE
