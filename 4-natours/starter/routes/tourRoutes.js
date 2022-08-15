@@ -10,12 +10,17 @@ const {
   // checkID,
   // checkBody,
   aliasTopTours,
+  getTourStats,
+  getMonthly,
 } = require(`./../controllers/tourController`);
 
 // param middleware, val = value of parameter
 // router.param(`id`, checkID);
 
 router.route(`/top5cheap`).get(aliasTopTours, getAllTours);
+
+router.route(`/tourStats`).get(getTourStats);
+router.route(`/monthly/:year`).get(getMonthly);
 
 router.route(`/`).get(getAllTours).post(createTour);
 

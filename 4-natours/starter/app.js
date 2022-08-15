@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require(`express`);
 const { userInfo } = require('os');
 const { clear } = require('console');
@@ -7,6 +8,10 @@ const app = express();
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const viewRouter = require('./routes/viewRoutes');
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 // 1 MIDDLEWARE
 if (process.env.NODE_ENV === `development`) {
@@ -16,7 +21,8 @@ if (process.env.NODE_ENV === `development`) {
 // middleware function handle incoming request
 // add body to object
 app.use(express.json());
-app.use(express.static(`${__dirname}/public`));
+// app.use(express.static(`${__dirname}/public`));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
   console.log(`Hello, my name is mids`);
@@ -58,6 +64,7 @@ app.use((req, res, next) => {
 // app.route(`/api/v1/tours`).get(getAllTours).post(createTour);
 
 // mounting router
+app.use('/', viewRouter);
 app.use(`/api/v1/tours`, tourRouter);
 app.use(`/api/v1/users`, userRouter);
 

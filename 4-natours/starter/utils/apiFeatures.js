@@ -19,7 +19,7 @@ class APIFeatures {
 
   sort() {
     if (this.queryStr.sort) {
-      const sortBy = this.query.sort.split(',').join(` `);
+      const sortBy = this.queryStr.sort.split(',').join(` `);
       this.query = this.query.sort(sortBy);
       // sort by two fields
       // sort(`price ratingsAverage`)
@@ -41,7 +41,7 @@ class APIFeatures {
 
   paginate() {
     const page = this.queryStr.page * 1 || 1;
-    const limit = this.queryStr.limit * 1 || 5;
+    const limit = this.queryStr.limit * 1 || 100;
     const skip = limit * (page - 1);
     // page=2&limit=5
     this.query = this.query.skip(skip).limit(limit);
